@@ -41,14 +41,14 @@ require_once('engine.php');
                                 <div class="field">
                                     <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
                                     <div class="ui left icon input">
-                                        <input type="text" name="txUser" id="txUser">
+                                        <input type="text" name="txUser" id="txUser" required>
                                         <i class="user icon"></i>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?></label>
                                     <div class="ui left icon input">
-                                        <input type="password" name="txPasswd" id="txPasswd">
+                                        <input type="password" name="txPasswd" id="txPasswd" required>
                                         <i class="lock icon"></i>
                                     </div>
                                 </div>
@@ -123,6 +123,10 @@ require_once('engine.php');
             }
             function sendLoginForm(){
                 $("#btOK").addClass("loading");
+                if( !validateForm('loginForm') ){
+                    $("#btOK").removeClass("loading");
+                    return false;
+                }
                 var loginData = wrapForm('loginForm');
                 //$('.ui.modal').modal('show');
                 sendForm(loginData);
@@ -137,8 +141,31 @@ require_once('engine.php');
                     }
                 });
             }
-            function validateLoginForm(){
+            function validateForm(formID){
+                var iErrors = 0;
+                $("form#" + formID).find('input').each(function(){
+
+                    if( $(this).prop('required') ){
+                        if( isEmpty( $(this) )){
+                            $(this).parent().parent().addClass('error');
+                            console.log('Field ' + $(this).prop('id') + ' is required and empty.');
+                            iErrors++;
+                        }else{
+                            $(this).parent().parent().removeClass('error');
+                        }
+                    }
+                });
                 
+                if( iErrors > 0 ){
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+
+            function isEmpty(element){
+                // Source: https://stackoverflow.com/a/6813294
+                return !$.trim(element.val());
             }
 
             function processResult(myData){
