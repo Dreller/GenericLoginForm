@@ -126,7 +126,7 @@ require_once('engine.php');
 
                                 $thisLabel = trim($promptLabels[$i]);
                                 $thisName = trim($promptNames[$i]);
-                                $thisType = trim($promptTypes[$i]);
+                                $thisType = validateDataType(trim($promptTypes[$i]));
 
                                 echo '<div class="field">';
                                 echo '<label>' . $thisLabel . '</label>';

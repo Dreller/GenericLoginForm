@@ -15,6 +15,21 @@ $loginOptions = false;
         $loginOptions = true;
     }
 
+# Functions - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function validateDataType($type){
+    $returnType = "text";
+    switch($type){
+        case "text":
+        case "date":
+        case "email":
+            $returnType = $type;
+    }
+    return $returnType;
+}
+
+
+
+# POST - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # If the engine gets data from a POST call
 if( getenv('REQUEST_METHOD') == 'POST' ){
     $raw = file_get_contents("php://input");
