@@ -15,7 +15,7 @@ require_once('engine.php');
             body{
                 background-color: #DADADA;
             }
-            #btOK{
+            .button{
                 cursor:pointer;
             }
         </style>
@@ -52,7 +52,7 @@ require_once('engine.php');
                                         <i class="lock icon"></i>
                                     </div>
                                 </div>
-                                <div class="ui <?php echo $loginConfig["GUI"]["LoginButtonColor"]; ?> submit button" id="btOK" onclick="sendLoginForm();">
+                                <div class="ui <?php echo $loginConfig["GUI"]["LoginButtonColor"]; ?> submit button" id="bt_loginOK" onclick="sendLoginForm();">
                                     <?php echo $loginConfig["GUI"]["LoginButtonLabel"]; ?>
                                 </div>
                             </form>
@@ -98,48 +98,56 @@ require_once('engine.php');
                 Registration form
             </div>
             <div id="modalText" class="content">
-                <div class="ui form" id="registrationForm">
-                    <div class="field">
-                        <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
-                        <input type="text" id="registrationUserCode">
-                    </div>
-                    <div class="two fields">
-                        <div class="field">
-                            <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?></label>
-                            <input type="password" id="registrationUserPasswd1">
-                        </div>
-                        <div class="field">
-                            <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?> (Confirm)</label>
-                            <input type="password" id="registrationUserPasswd2">
-                        </div>
-                    </div>
-                        <!-- Loop to add additional fields --> 
-                        <?php  
-
-                            $promptNames = explode(",", $loginConfig["Registration"]["Fields"]);
-                            $promptLabels = explode(",", $loginConfig["Registration"]["Labels"]);
-                            $promptTypes = explode(",", $loginConfig["Registration"]["Types"]);
-                            $i = -1;
-
-                            foreach($promptNames as $dummy){
-                                $i++;
-
-                                $thisLabel = trim($promptLabels[$i]);
-                                $thisName = trim($promptNames[$i]);
-                                $thisType = validateDataType(trim($promptTypes[$i]));
-
-                                echo '<div class="field">';
-                                echo '<label>' . $thisLabel . '</label>';
-                                echo '<input type="' . $thisType. '" id="' . $thisName . '">';
-                                echo '</div>';
-                            }
-                        ?>
-                    
+                <div class="ui hidden message negative" id="registrationErrorMessage">
+                    <p id="registrationErrorMessageText"></p>
                 </div>
+                <form id="registerForm">
+                <input type="hidden" name="method" value="register">
+                    <div class="ui form" id="registrationForm">
+                        <div class="field">
+                            <div class="field">
+                                <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
+                                <input type="text" id="<?php echo $loginConfig["Database"]["UserCodeField"]; ?>" name="<?php echo $loginConfig["Database"]["UserCodeField"]; ?>" required>
+                            </div>
+                        </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?></label>
+                                <input type="password" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" required>
+                            </div>
+                            <div class="field">
+                                <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?> (Confirm)</label>
+                                <input type="password" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" required>
+                            </div>
+                        </div>
+                            <!-- Loop to add additional fields --> 
+                            <?php  
+
+                                $promptNames = explode(",", $loginConfig["Registration"]["Fields"]);
+                                $promptLabels = explode(",", $loginConfig["Registration"]["Labels"]);
+                                $promptTypes = explode(",", $loginConfig["Registration"]["Types"]);
+                                $i = -1;
+
+                                foreach($promptNames as $dummy){
+                                    $i++;
+
+                                    $thisLabel = trim($promptLabels[$i]);
+                                    $thisName = trim($promptNames[$i]);
+                                    $thisType = validateDataType(trim($promptTypes[$i]));
+
+                                    echo '<div class="field">';
+                                    echo '<label>' . $thisLabel . '</label>';
+                                    echo '<input type="' . $thisType. '" id="' . $thisName . '" name="' . $thisName . '">';
+                                    echo '</div>';
+                                }
+                            ?>
+                        
+                    </div>
+                </form>
             </div>
             <div class="actions">
                 <div class="ui cancel button">Cancel</div>
-                <div class="ui button">OK</div>
+                <div class="ui button" id="btn_registrationOK" onclick="sendRegistrationForm();">OK</div>
             </div>
         </div>
 
@@ -155,26 +163,33 @@ require_once('engine.php');
                     sorted_array[n['name']] = n['value'];
                 });
                 var jsonWorker = JSON.stringify(sorted_array);
-                console.log(jsonWorker);
                 return jsonWorker;
             }
             function sendLoginForm(){
-                $("#btOK").addClass("loading");
+                $("#bt_loginOK").addClass("loading");
                 if( !validateForm('loginForm') ){
-                    $("#btOK").removeClass("loading");
+                    $("#bt_loginOK").removeClass("loading");
                     return false;
                 }
                 var loginData = wrapForm('loginForm');
-                //$('.ui.modal').modal('show');
-                sendForm(loginData);
+                sendForm(loginData, 'login');
             }
-            function sendForm(jsonData){
+            function sendRegistrationForm(){
+                $("#bt_registrationOK").addClass("loading");
+                if( !validateForm('registerForm') ){
+                    $("#bt_registrationOK").removeClass("loading");
+                    return false;
+                }
+                var registerData = wrapForm('registerForm');
+                sendForm(registerData, 'registration');
+            }
+            function sendForm(jsonData, target){
                 $.ajax({
                     type: "POST",
                     url: "engine.php",
                     data: jsonData,
                     success: function(result){
-                        processResult(result);
+                        processResult(result, target);
                     }
                 });
             }
@@ -191,6 +206,16 @@ require_once('engine.php');
                             $(this).parent().parent().removeClass('error');
                         }
                     }
+
+                    if( $(this).attr("name")!="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" ){
+                        $passwd1 = document.getElementById('<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>').value;
+                        $passwd2 = document.getElementById('<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2').value;
+                        if( $passwd1 != $passwd2 ){
+                            $(this).parent().parent().addClass('error');
+                            displayErrorMessage('registration', 'Password and its confirmation are differents.');
+                            iErrors++;
+                        }
+                    }
                 });
                 
                 if( iErrors > 0 ){
@@ -205,15 +230,12 @@ require_once('engine.php');
                 return !$.trim(element.val());
             }
 
-            function processResult(myData){
-                $("#btOK").removeClass("loading");
+            function processResult(myData, target){
+                $("#bt" + target + "OK").removeClass("loading");
                 console.log(myData);
-                //data = JSON.parse(myData);
 
                 if(myData['status']=='error'){
-                    document.getElementById('loginErrorMessageText').innerHTML = myData['message'];
-                    $('#loginErrorMessage').removeClass('hidden');
-                    $('#loginErrorMessage').addClass('visible');
+                    displayErrorMessage(target, myData['message']);
                 }
                 if(myData['status']=='ok'){
                     window.location.replace(myData['reference']);
@@ -223,6 +245,11 @@ require_once('engine.php');
             }
             function displayRegistrationForm(){
                 $("#registrationModal").modal('show');
+            }
+            function displayErrorMessage(target, message){
+                document.getElementById(target + 'ErrorMessageText').innerHTML = message;
+                $('#' + target + 'ErrorMessage').removeClass('hidden');
+                $('#' + target + 'ErrorMessage').addClass('visible');
             }
             
         </script>

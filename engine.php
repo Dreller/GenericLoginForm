@@ -88,6 +88,49 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
     }
+    if( $method == "register" ){
+        # Extract registration data 
+        $recData = json_decode($raw, true);
+        unset( $recData[ 'method' ] );
+        unset( $recData[ $fieldPass . '2' ] );
+
+        # Hash Password
+        $recData[$fieldPass] = password_hash( $recData[$fieldPass], PASSWORD_DEFAULT);
+
+        # Database
+        require_once('php/MysqliDb.php');
+        $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
+
+        # Check for unique data
+        $uniques = array_map('trim', explode(",", $loginConfig["Registration"]["Uniques"]));
+        foreach( $uniques as $unique ){
+            $db->where($unique, $recData[$unique]);
+            $db->get($tableName);
+            if( $db->count > 0 ){
+                $json['status']     = 'error';
+                $json['message']    = 'Looks like you already have an account.';
+                goto OutputJSON;
+            }
+        }
+
+        # Create new User Entry
+        $newID = $db->insert( $tableName, $recData );
+
+        # Retrieve data from database, to proceed to the session start.
+        $db->where( $fieldUser, $recData[ $fieldUser ] );
+        $user = $db->getOne( $tableName );
+
+        # If every tests are passed, we start a PHP Session with all user infos.
+        session_start();
+        foreach( $user as $key=>$value ){
+            $_SESSION[$key] = $value;
+        }
+        $json['status']     = 'ok';
+        $json['message']    = 'Welcome!';
+        $json['reference']  = $loginConfig["Application"]["RedirectPage"];
+        goto OutputJSON;
+
+    }
 
 OutputJSON:
     header('Content-Type: application/json');
