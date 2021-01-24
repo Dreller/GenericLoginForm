@@ -26,6 +26,15 @@ function validateDataType($type){
     }
     return $returnType;
 }
+function randomString($len) { 
+    $pool = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ!?-+$'; 
+    $string = '';
+    for ($i = 0; $i < $len; $i++) { 
+        $index = rand(0, strlen($pool) - 1); 
+        $string .= $pool[$index]; 
+    } 
+    return $string; 
+} 
 
 
 
@@ -87,6 +96,53 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         $json['message']    = 'Welcome!';
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
+    }
+    if( $method == "reset" ){
+        # Extract user email address from form 
+            $recData = json_decode($raw, true);
+            $userEmail = $recData[$loginConfig["PasswordReset"]["EmailField"]];
+        
+        # Database
+            require_once('php/MysqliDb.php');
+            $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
+
+        # Validate if this email address exists 
+            $db->where($loginConfig["PasswordReset"]["EmailField"], $userEmail);
+            $user = $db->get( $tableName );
+
+            if( $db->count == 0 ){
+                $json['status']     = 'error';
+                $json['message']    = 'No user found with this email.';
+                goto OutputJSON;
+            }
+            if( $db->count > 1 ){
+                $json['status']     = 'error';
+                $json['message']    = 'Oops!  Something went wrong, we have found more than 1 user with this email.';
+                goto OutputJSON;
+            }
+            # At this point, we have found the only user related to this email address.
+            # We set an temporary password.
+
+            $newPasswd = randomString(10);
+            $newHashed = password_hash($newPasswd, PASSWORD_DEFAULT);
+
+            $newData = Array(
+                $fieldPass => $newHashed,
+                $loginConfig["PasswordReset"]["ExpiredField"] => 1
+            );
+
+            ######## Must implement something to handle Table Key
+            $db->where("userID", $user['userID']);
+            if( $db->update($tableName, $newData) ){
+                mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
+                $json['status']     = 'tell';
+                $json['message']    = 'Temp passwd sent to email.  Be sure to check your SPAM folder!';
+                goto OutputJSON;
+            }else{
+                $json['status']     = 'error';
+                $json['message']    = 'MySQL Error: ' . $db->getLastError();
+                goto OutputJSON;
+            }
     }
     if( $method == "register" ){
         # Extract registration data 

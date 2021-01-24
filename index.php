@@ -70,7 +70,7 @@ require_once('engine.php');
                                         </div></p>';
                                 }
                                 if( $loginConfig["PasswordReset"]["Enabled"]=="Y" ){
-                                    echo '<p><div class="ui '.$loginConfig["PasswordReset"]["Invite"].' button">
+                                    echo '<p><div class="ui '.$loginConfig["PasswordReset"]["Invite"].' button" onclick="displayResetForm();">
                                             <i class="signup icon"></i>
                                             '.$loginConfig["PasswordReset"]["Invite"].'
                                         </div></p>';
@@ -89,7 +89,32 @@ require_once('engine.php');
             </div>
         </div>
 
-
+        <div class="ui tiny modal" id="resetModal">
+            <i class="close icon"></i>
+            <div class="header">
+                Reset password form
+            </div>
+            <div class="content">
+                <div class="ui hidden message negative" id="resetErrorMessage">
+                    <p id="resetErrorMessageText"></p>
+                </div>
+                <form id="resetForm">
+                    <input type="hidden" name="method" value="reset">
+                    <div class="ui form" id="resetForm">
+                        <div class="field">
+                            <div class="field">
+                                <label>Enter your email address:</label>
+                                <input type="email" id="<?php echo $loginConfig["PasswordReset"]["EmailField"]; ?>" name="<?php echo $loginConfig["PasswordReset"]["EmailField"]; ?>">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="actions">
+                <div class="ui cancel button">Cancel</div>
+                <div class="ui button" id="btn_resetOK" onclick="sendResetForm();">OK</div>
+            </div>
+        </div>
 
 
         <div class="ui tiny modal" id="registrationModal">
@@ -102,7 +127,7 @@ require_once('engine.php');
                     <p id="registrationErrorMessageText"></p>
                 </div>
                 <form id="registerForm">
-                <input type="hidden" name="method" value="register">
+                    <input type="hidden" name="method" value="register">
                     <div class="ui form" id="registrationForm">
                         <div class="field">
                             <div class="field">
@@ -120,9 +145,7 @@ require_once('engine.php');
                                 <input type="password" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" required>
                             </div>
                         </div>
-                            <!-- Loop to add additional fields --> 
-                            <?php  
-
+                        <?php
                                 $promptNames = explode(",", $loginConfig["Registration"]["Fields"]);
                                 $promptLabels = explode(",", $loginConfig["Registration"]["Labels"]);
                                 $promptTypes = explode(",", $loginConfig["Registration"]["Types"]);
@@ -151,7 +174,11 @@ require_once('engine.php');
             </div>
         </div>
 
-
+    <div id="dimmerScreen" class="ui page dimmer">
+        <div id="dimmerText" class="content">
+            
+        </div>
+    </div>
        
         <script src="js/jquery_3.5.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
@@ -182,6 +209,15 @@ require_once('engine.php');
                 }
                 var registerData = wrapForm('registerForm');
                 sendForm(registerData, 'registration');
+            }
+            function sendResetForm(){
+                $("#bt_resetOK").addClass("loading");
+                if( !validateForm('resetForm') ){
+                    $("#bt_resetOK").removeClass("loading");
+                    return false;
+                }
+                var resetData = wrapForm('resetForm');
+                sendForm(resetData, 'reset');
             }
             function sendForm(jsonData, target){
                 $.ajax({
@@ -237,6 +273,11 @@ require_once('engine.php');
                 if(myData['status']=='error'){
                     displayErrorMessage(target, myData['message']);
                 }
+                if(myData['status']=='tell'){
+                    document.getElementById("dimmerText").innerHTML = myData['message'];
+                    console.log(myData['message']);
+                    $("#dimmerScreen").dimmer('show');
+                }
                 if(myData['status']=='ok'){
                     window.location.replace(myData['reference']);
                 }
@@ -245,6 +286,9 @@ require_once('engine.php');
             }
             function displayRegistrationForm(){
                 $("#registrationModal").modal('show');
+            }
+            function displayResetForm(){
+                $("#resetModal").modal('show');
             }
             function displayErrorMessage(target, message){
                 document.getElementById(target + 'ErrorMessageText').innerHTML = message;
