@@ -24,6 +24,11 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     $dbUser = $loginConfig["Database"]["User"];
     $dbPass = $loginConfig["Database"]["Password"];
     $dbName = $loginConfig["Database"]["Database"];
+    $dbPort = $loginConfig["Database"]["Port"];
+
+    if($dbPort != ""){
+        $dbHost = $dbHost . ':' . $dbPort;
+    }
 
     $tableName  = $loginConfig["Database"]["UserTableName"];
     $fieldUser  = $loginConfig["Database"]["UserCodeField"];
