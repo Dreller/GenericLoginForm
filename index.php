@@ -113,6 +113,28 @@ require_once('engine.php');
                             <input type="password" id="registrationUserPasswd2">
                         </div>
                     </div>
+                        <!-- Loop to add additional fields --> 
+                        <?php  
+
+                            $promptNames = explode(",", $loginConfig["Registration"]["Fields"]);
+                            $promptLabels = explode(",", $loginConfig["Registration"]["Labels"]);
+                            $promptTypes = explode(",", $loginConfig["Registration"]["Types"]);
+                            $i = -1;
+
+                            foreach($promptNames as $dummy){
+                                $i++;
+
+                                $thisLabel = trim($promptLabels[$i]);
+                                $thisName = trim($promptNames[$i]);
+                                $thisType = trim($promptTypes[$i]);
+
+                                echo '<div class="field">';
+                                echo '<label>' . $thisLabel . '</label>';
+                                echo '<input type="' . $thisType. '" id="' . $thisName . '">';
+                                echo '</div>';
+                            }
+                        ?>
+                    
                 </div>
             </div>
             <div class="actions">
