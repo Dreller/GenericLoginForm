@@ -64,7 +64,7 @@ require_once('engine.php');
                         if( $loginOptions ){
                             echo '<div class="middle aligned column">';
                                 if( $loginConfig["Registration"]["Enabled"]=="Y" ){
-                                    echo '<p><div class="ui '.$loginConfig["Registration"]["Color"].' button">
+                                    echo '<p><div class="ui '.$loginConfig["Registration"]["Color"].' button" onclick="displayRegistrationForm();">
                                             <i class="signup icon"></i>
                                             '.$loginConfig["Registration"]["Invite"].'
                                         </div></p>';
@@ -92,16 +92,21 @@ require_once('engine.php');
 
 
 
-        <div class="ui modal">
-            <i class="cloase icon"></i>
+        <div class="ui tiny modal" id="registrationModal">
+            <i class="close icon"></i>
             <div class="header">
-                Test
+                Registration form
             </div>
             <div id="modalText" class="content">
-                    ALLO
+                <div class="ui form" id="registrationForm">
+                    <div class="field">
+                        <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
+                        <input type="text" id="registrationUserCode">
+                    </div>
+                </div>
             </div>
             <div class="actions">
-                <div class="ui button">Cancel</div>
+                <div class="ui cancel button">Cancel</div>
                 <div class="ui button">OK</div>
             </div>
         </div>
@@ -183,6 +188,9 @@ require_once('engine.php');
                 }
 
 
+            }
+            function displayRegistrationForm(){
+                $("#registrationModal").modal('show');
             }
             
         </script>
