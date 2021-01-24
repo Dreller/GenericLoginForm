@@ -103,6 +103,16 @@ require_once('engine.php');
                         <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
                         <input type="text" id="registrationUserCode">
                     </div>
+                    <div class="two fields">
+                        <div class="field">
+                            <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?></label>
+                            <input type="password" id="registrationUserPasswd1">
+                        </div>
+                        <div class="field">
+                            <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?> (Confirm)</label>
+                            <input type="password" id="registrationUserPasswd2">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="actions">
