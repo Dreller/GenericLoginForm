@@ -20,7 +20,33 @@ First thing to do is edit the file `.login.config`.  Take the time to read each 
 1. Change `Database` accordingly to the comments.  You must set the authentication data to reach your MySQL databse.  Also, you have to set the name of the Table that contains your users, and the name of the column that contains Usercodes and Passwords.
 
 ### Enable Registration
-(function not yet created)
+Edit the `.login.config` file as follow:
+
+1. Change the `Registration/Enabled` to `Y` (for Yeah!).
+1. Customize the `Registration/Invite` and `Registration/Color` to something you like.
+
+The basic registration form will ask for the user code and a password.  Those will be saved to the MySQL fields you have set in the `Database` section.
+
+#### You want to ask more prompts ?
+
+1. List all MySQL Column Names you want to ask, in the Registration form, in `Registration/Fields`.  Separated with a coma.  
+1. For each fields in `Registration/Fields`, you want to set a proper user-friendly label, in `Registration/Labels`, separated with a coma too.
+1. If a field should have a specific data type, set it in `Registration/Types`.  Still separated with a coma.   
+
+**IMPORTANT: `Fields`, `Labels` and `Types` must have the same number of data**. They should by sync'd together, as you can see in this example:
+
+```
+[Registration]
+Fields="userFirstName,userLastName,userEmail"
+Labels="First Name,Last Name,Email Address"
+Types="text,text,email"
+``` 
+
+You may want to control duplicate user accounts ?  Of course you want !  Simply list field names that should be unique, in `Registration/Uniques`.  You can set many fields, separated with a coma.
+During the registration process, the engine will check each of those fields, and validate if the data already exists.
+In this setting, you would set the User Email and/or User Code column name, to avoid multiple users have the same User Code and/or User Email.
+
+When the registratin is completed, the user will be redirected, the same way a regular login would do.
 
 ### Enable Password Reset
 (function not yet created)
