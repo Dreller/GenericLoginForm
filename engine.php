@@ -60,6 +60,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     $tableName  = $loginConfig["Database"]["UserTableName"];
     $fieldUser  = $loginConfig["Database"]["UserCodeField"];
     $fieldPass  = $loginConfig["Database"]["UserPasswordField"];
+    $fieldID    = $loginConfig["Database"]["UserIdField"];
     
     if( $method == 'auth' ){
         # Extract Authentication data
@@ -142,11 +143,11 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             $loginConfig["PasswordReset"]["ExpiredField"] => 0
         );
 
-        $db->where('userID', $user['userID']);
+        $db->where($fieldID, $user[$fieldID]);
         $db->update($tableName, $newData);
 
         # Re-get User infos
-        $db->where('userID', $user['userID']);
+        $db->where($fieldID, $user[$fieldID]);
         $user = $db->getOne($tableName);
         
         # If every tests are passed, we start a PHP Session with all user infos.
@@ -193,7 +194,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             );
 
             ######## Must implement something to handle Table Key
-            $db->where("userID", $user['userID']);
+            $db->where($fieldID, $user[$fieldID]);
             if( $db->update($tableName, $newData) ){
                 $mailOK =  mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
                 if( $mailOK === true ){
@@ -237,11 +238,11 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         }
 
         # Create new User Entry
-        $newID = $db->insert( $tableName, $recData );
+        $newID = $db->insert( $tableName, $input );
 
         # Retrieve data from database, to proceed to the session start.
-        $db->where( $fieldUser, $recData[ $fieldUser ] );
-        $user = $db->getOne( $tableName );
+        $db->where($fieldID, $newID);
+        $user = $db->getOne($tableName);
 
         # If every tests are passed, we start a PHP Session with all user infos.
         session_start();
@@ -252,7 +253,6 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         $json['message']    = 'Welcome!';
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
-
     }
 
 OutputJSON:
