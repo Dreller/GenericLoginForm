@@ -108,7 +108,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
 
         # Validate if this email address exists 
             $db->where($loginConfig["PasswordReset"]["EmailField"], $userEmail);
-            $user = $db->get( $tableName );
+            $user = $db->getOne( $tableName );
 
             if( $db->count == 0 ){
                 $json['status']     = 'error';
@@ -134,13 +134,20 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             ######## Must implement something to handle Table Key
             $db->where("userID", $user['userID']);
             if( $db->update($tableName, $newData) ){
-                mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
-                $json['status']     = 'tell';
-                $json['message']    = 'Temp passwd sent to email.  Be sure to check your SPAM folder!';
-                goto OutputJSON;
+                $mailOK =  mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
+                if( $mailOK === true ){
+                    $json['status']     = 'tell';
+                    $json['message']    = 'Temporary password sent to ' . $userEmail . '.  Be sure to check your SPAM folder!';
+                    goto OutputJSON;
+                }else{
+                    $json['status']     = 'error';
+                    $json['message']    = 'Password has been changed, but unable to send the temporary password to ' . $userEmail;
+                    goto OutputJSON;
+                }
+                
             }else{
                 $json['status']     = 'error';
-                $json['message']    = 'MySQL Error: ' . $db->getLastError();
+                $json['message']    = 'Unable to change the password, MySQLi Error: ' . $db->getLastError();
                 goto OutputJSON;
             }
     }
