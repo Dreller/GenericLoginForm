@@ -86,6 +86,69 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
                 goto OutputJSON;
             }
 
+        # If the password is expired and user have to change it
+        # To use this function, the 'PasswordReset' feature must be enabled.
+        if( $loginConfig["PasswordReset"]["Enabled"] == "Y" ){
+            $expirationField = $loginConfig["PasswordReset"]["ExpiredField"];
+            if( $user[$expirationField] != 0 ){
+                $json['status']     = 'passwd';
+                $json['message']    = 'You must change your password';
+                $json['u']          = $userCode;
+                $json['p']          = $userPass;
+                goto OutputJSON;
+            }
+        }
+
+        
+        # If every tests are passed, we start a PHP Session with all user infos.
+        session_start();
+        foreach( $user as $key=>$value ){
+            $_SESSION[$key] = $value;
+        }
+        $json['status']     = 'ok';
+        $json['message']    = 'Welcome!';
+        $json['reference']  = $loginConfig["Application"]["RedirectPage"];
+        goto OutputJSON;
+    }
+
+    if( $method == 'passwd' ){
+        # Extract Authentication data
+            $userCode = $input->txPasswdUser;
+            $userPass = $input->txPasswdCurrent;
+        # Authenticate user
+            require_once('php/MysqliDb.php');
+            $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
+              
+        # Select User from database
+            $db->where($fieldUser, $userCode);
+            $user = $db->getOne($tableName);
+
+        # If there is no user found
+            if( $db->count == 0 ){
+                $json['status']     = 'error';
+                $json['message']    = sprintf($loginConfig["Literal"]["NoUserFound"], $userCode);
+                goto OutputJSON;
+            }
+        # If the password is not the right one
+            if( !password_verify($userPass, $user[$fieldPass]) ){
+                $json['status']     = 'error';
+                $json['message']    = $loginConfig["Literal"]["BadPassword"];
+                goto OutputJSON;
+            }
+
+        # Update the Password with the new one
+        $recData = json_decode($raw, true);
+        $newData = Array(
+            $fieldPass => password_hash($recData[$fieldPass], PASSWORD_DEFAULT),
+            $loginConfig["PasswordReset"]["ExpiredField"] => 0
+        );
+
+        $db->where('userID', $user['userID']);
+        $db->update($tableName, $newData);
+
+        # Re-get User infos
+        $db->where('userID', $user['userID']);
+        $user = $db->getOne($tableName);
         
         # If every tests are passed, we start a PHP Session with all user infos.
         session_start();

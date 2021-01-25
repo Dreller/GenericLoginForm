@@ -100,7 +100,7 @@ require_once('engine.php');
                 </div>
                 <form id="resetForm">
                     <input type="hidden" name="method" value="reset">
-                    <div class="ui form" id="resetForm">
+                    <div class="ui form">
                         <div class="field">
                             <div class="field">
                                 <label>Enter your email address:</label>
@@ -116,6 +116,53 @@ require_once('engine.php');
             </div>
         </div>
 
+        <div class="ui tiny modal" id="passwdModal">
+            <i class="close icon"></i>
+            <div class="header">
+                Change password form
+            </div>
+            <div class="content">
+                <div class="ui hidden message negative" id="passwdErrorMessage">
+                    <p id="passwdErrorMessageText"></p>
+                </div>
+                <form id="passwdForm">
+                    <input type="hidden" name="method" value="passwd">
+                    <div class="ui form">
+                        <div class="ui info message">
+                            <div class="header">
+                                You must change your password to continue.
+                            </div>
+                            <p>
+                                Your <?php echo $loginConfig["GUI"]["UserLabel"]; ?> and current <?php echo $loginConfig["GUI"]["PasswordLabel"]; ?> are already set.  Please, fill this form to set your new password.
+                            </p>
+                        </div>
+                        <div class="field">
+                            <div class="field">
+                                <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
+                                <input type="text" name="txPasswdUser" id="txPasswdUser" required>
+                            </div>
+                            <div class="field">
+                                <label><?php echo "Current password"; ?></label>
+                                <input type="password" name="txPasswdCurrent" id="txPasswdCurrent" required>
+                            </div>
+                            <div class="field">
+                                <label><?php echo "New password"; ?></label>
+                                <input type="password" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" required>
+                            </div>
+                            <div class="field">
+                                <label><?php echo "New password (confirm)"; ?></label>
+                                <input type="password" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="actions">
+                <div class="ui cancel button">Cancel</div>
+                <div class="ui button" id="btn_passwdOK" onclick="sendPasswdForm();">OK</div>
+            </div>
+        </div>
+
 
         <div class="ui tiny modal" id="registrationModal">
             <i class="close icon"></i>
@@ -128,7 +175,7 @@ require_once('engine.php');
                 </div>
                 <form id="registerForm">
                     <input type="hidden" name="method" value="register">
-                    <div class="ui form" id="registrationForm">
+                    <div class="ui form">
                         <div class="field">
                             <div class="field">
                                 <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
@@ -219,12 +266,21 @@ require_once('engine.php');
                 var resetData = wrapForm('resetForm');
                 sendForm(resetData, 'reset');
             }
+            function sendPasswdForm(){
+                $("#bt_passwdOK").addClass("loading");
+                if( !validateForm('passwdForm') ){
+                    $("#bt_passwdOK").removeClass("loading");
+                    return false;
+                }
+                var passwdData = wrapForm('passwdForm');
+                sendForm(passwdData, 'passwd');
+            }
             function sendForm(jsonData, target){
                 $.ajax({
                     type: "POST",
                     url: "engine.php",
                     data: jsonData,
-                    success: function(result){
+                    success: function(result, target){
                         processResult(result, target);
                     }
                 });
@@ -270,18 +326,22 @@ require_once('engine.php');
                 $("#bt" + target + "OK").removeClass("loading");
                 console.log(myData);
 
-                if(myData['status']=='error'){
+                if( myData['status'] == 'error' ){
                     displayErrorMessage(target, myData['message']);
                 }
-                if(myData['status']=='tell'){
+                if( myData['status'] == 'tell' ){
                     document.getElementById("dimmerText").innerHTML = myData['message'];
                     console.log(myData['message']);
                     $("#dimmerScreen").dimmer('show');
                 }
-                if(myData['status']=='ok'){
+                if( myData['status'] == 'ok' ){
                     window.location.replace(myData['reference']);
                 }
-
+                if( myData['status'] == 'passwd' ){
+                    $("#txPasswdUser").val(myData['u']);
+                    $("#txPasswdCurrent").val(myData['p']);
+                    displayPasswdForm();
+                }
 
             }
             function displayRegistrationForm(){
@@ -289,6 +349,9 @@ require_once('engine.php');
             }
             function displayResetForm(){
                 $("#resetModal").modal('show');
+            }
+            function displayPasswdForm(){
+                $("#passwdModal").modal('show');
             }
             function displayErrorMessage(target, message){
                 document.getElementById(target + 'ErrorMessageText').innerHTML = message;
