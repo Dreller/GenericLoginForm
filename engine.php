@@ -26,6 +26,15 @@ function validateDataType($type){
     }
     return $returnType;
 }
+function randomString($len) { 
+    $pool = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ!?-+$'; 
+    $string = '';
+    for ($i = 0; $i < $len; $i++) { 
+        $index = rand(0, strlen($pool) - 1); 
+        $string .= $pool[$index]; 
+    } 
+    return $string; 
+} 
 
 
 
@@ -77,6 +86,19 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
                 goto OutputJSON;
             }
 
+        # If the password is expired and user have to change it
+        # To use this function, the 'PasswordReset' feature must be enabled.
+        if( $loginConfig["PasswordReset"]["Enabled"] == "Y" ){
+            $expirationField = $loginConfig["PasswordReset"]["ExpiredField"];
+            if( $user[$expirationField] != 0 ){
+                $json['status']     = 'passwd';
+                $json['message']    = 'You must change your password';
+                $json['u']          = $userCode;
+                $json['p']          = $userPass;
+                goto OutputJSON;
+            }
+        }
+
         
         # If every tests are passed, we start a PHP Session with all user infos.
         session_start();
@@ -87,6 +109,110 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         $json['message']    = 'Welcome!';
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
+    }
+
+    if( $method == 'passwd' ){
+        # Extract Authentication data
+            $userCode = $input->txPasswdUser;
+            $userPass = $input->txPasswdCurrent;
+        # Authenticate user
+            require_once('php/MysqliDb.php');
+            $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
+              
+        # Select User from database
+            $db->where($fieldUser, $userCode);
+            $user = $db->getOne($tableName);
+
+        # If there is no user found
+            if( $db->count == 0 ){
+                $json['status']     = 'error';
+                $json['message']    = sprintf($loginConfig["Literal"]["NoUserFound"], $userCode);
+                goto OutputJSON;
+            }
+        # If the password is not the right one
+            if( !password_verify($userPass, $user[$fieldPass]) ){
+                $json['status']     = 'error';
+                $json['message']    = $loginConfig["Literal"]["BadPassword"];
+                goto OutputJSON;
+            }
+
+        # Update the Password with the new one
+        $recData = json_decode($raw, true);
+        $newData = Array(
+            $fieldPass => password_hash($recData[$fieldPass], PASSWORD_DEFAULT),
+            $loginConfig["PasswordReset"]["ExpiredField"] => 0
+        );
+
+        $db->where('userID', $user['userID']);
+        $db->update($tableName, $newData);
+
+        # Re-get User infos
+        $db->where('userID', $user['userID']);
+        $user = $db->getOne($tableName);
+        
+        # If every tests are passed, we start a PHP Session with all user infos.
+        session_start();
+        foreach( $user as $key=>$value ){
+            $_SESSION[$key] = $value;
+        }
+        $json['status']     = 'ok';
+        $json['message']    = 'Welcome!';
+        $json['reference']  = $loginConfig["Application"]["RedirectPage"];
+        goto OutputJSON;
+    }
+    if( $method == "reset" ){
+        # Extract user email address from form 
+            $recData = json_decode($raw, true);
+            $userEmail = $recData[$loginConfig["PasswordReset"]["EmailField"]];
+        
+        # Database
+            require_once('php/MysqliDb.php');
+            $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
+
+        # Validate if this email address exists 
+            $db->where($loginConfig["PasswordReset"]["EmailField"], $userEmail);
+            $user = $db->getOne( $tableName );
+
+            if( $db->count == 0 ){
+                $json['status']     = 'error';
+                $json['message']    = 'No user found with this email.';
+                goto OutputJSON;
+            }
+            if( $db->count > 1 ){
+                $json['status']     = 'error';
+                $json['message']    = 'Oops!  Something went wrong, we have found more than 1 user with this email.';
+                goto OutputJSON;
+            }
+            # At this point, we have found the only user related to this email address.
+            # We set an temporary password.
+
+            $newPasswd = randomString(10);
+            $newHashed = password_hash($newPasswd, PASSWORD_DEFAULT);
+
+            $newData = Array(
+                $fieldPass => $newHashed,
+                $loginConfig["PasswordReset"]["ExpiredField"] => 1
+            );
+
+            ######## Must implement something to handle Table Key
+            $db->where("userID", $user['userID']);
+            if( $db->update($tableName, $newData) ){
+                $mailOK =  mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
+                if( $mailOK === true ){
+                    $json['status']     = 'tell';
+                    $json['message']    = 'Temporary password sent to ' . $userEmail . '.  Be sure to check your SPAM folder!';
+                    goto OutputJSON;
+                }else{
+                    $json['status']     = 'error';
+                    $json['message']    = 'Password has been changed, but unable to send the temporary password to ' . $userEmail;
+                    goto OutputJSON;
+                }
+                
+            }else{
+                $json['status']     = 'error';
+                $json['message']    = 'Unable to change the password, MySQLi Error: ' . $db->getLastError();
+                goto OutputJSON;
+            }
     }
     if( $method == "register" ){
         # Extract registration data 
