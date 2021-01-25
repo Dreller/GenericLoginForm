@@ -42,8 +42,8 @@ function randomString($len) {
 # If the engine gets data from a POST call
 if( getenv('REQUEST_METHOD') == 'POST' ){
     $raw = file_get_contents("php://input");
-    $input = json_decode($raw);
-    $method = $input->method;
+    $input = json_decode($raw, true);
+    $method = $input["method"];
 
     $json = Array();
 
@@ -63,8 +63,8 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     
     if( $method == 'auth' ){
         # Extract Authentication data
-            $userCode = $input->txUser;
-            $userPass = $input->txPasswd;
+            $userCode = $input["txUser"];
+            $userPass = $input["txPasswd"];
         # Authenticate user
             require_once('php/MysqliDb.php');
             $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
@@ -113,8 +113,8 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
 
     if( $method == 'passwd' ){
         # Extract Authentication data
-            $userCode = $input->txPasswdUser;
-            $userPass = $input->txPasswdCurrent;
+            $userCode = $input["txPasswdUser"];
+            $userPass = $input["txPasswdCurrent"];
         # Authenticate user
             require_once('php/MysqliDb.php');
             $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
@@ -137,9 +137,8 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             }
 
         # Update the Password with the new one
-        $recData = json_decode($raw, true);
         $newData = Array(
-            $fieldPass => password_hash($recData[$fieldPass], PASSWORD_DEFAULT),
+            $fieldPass => password_hash($input[$fieldPass], PASSWORD_DEFAULT),
             $loginConfig["PasswordReset"]["ExpiredField"] => 0
         );
 
@@ -162,8 +161,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     }
     if( $method == "reset" ){
         # Extract user email address from form 
-            $recData = json_decode($raw, true);
-            $userEmail = $recData[$loginConfig["PasswordReset"]["EmailField"]];
+            $userEmail = $input[$loginConfig["PasswordReset"]["EmailField"]];
         
         # Database
             require_once('php/MysqliDb.php');
@@ -216,12 +214,11 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     }
     if( $method == "register" ){
         # Extract registration data 
-        $recData = json_decode($raw, true);
-        unset( $recData[ 'method' ] );
-        unset( $recData[ $fieldPass . '2' ] );
+        unset( $input['method']);
+        unset( $input[ $fieldPass . '2' ] );
 
         # Hash Password
-        $recData[$fieldPass] = password_hash( $recData[$fieldPass], PASSWORD_DEFAULT);
+        $input[$fieldPass] = password_hash( $input[$fieldPass], PASSWORD_DEFAULT);
 
         # Database
         require_once('php/MysqliDb.php');
@@ -230,7 +227,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         # Check for unique data
         $uniques = array_map('trim', explode(",", $loginConfig["Registration"]["Uniques"]));
         foreach( $uniques as $unique ){
-            $db->where($unique, $recData[$unique]);
+            $db->where($unique, $input[$unique]);
             $db->get($tableName);
             if( $db->count > 0 ){
                 $json['status']     = 'error';
