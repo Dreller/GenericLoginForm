@@ -42,8 +42,8 @@ function randomString($len) {
 # If the engine gets data from a POST call
 if( getenv('REQUEST_METHOD') == 'POST' ){
     $raw = file_get_contents("php://input");
-    $input = json_decode($raw);
-    $method = $input->method;
+    $input = json_decode($raw, true);
+    $method = $input["method"];
 
     $json = Array();
 
@@ -60,11 +60,12 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     $tableName  = $loginConfig["Database"]["UserTableName"];
     $fieldUser  = $loginConfig["Database"]["UserCodeField"];
     $fieldPass  = $loginConfig["Database"]["UserPasswordField"];
+    $fieldID    = $loginConfig["Database"]["UserIdField"];
     
     if( $method == 'auth' ){
         # Extract Authentication data
-            $userCode = $input->txUser;
-            $userPass = $input->txPasswd;
+            $userCode = $input["txUser"];
+            $userPass = $input["txPasswd"];
         # Authenticate user
             require_once('php/MysqliDb.php');
             $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
@@ -113,8 +114,8 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
 
     if( $method == 'passwd' ){
         # Extract Authentication data
-            $userCode = $input->txPasswdUser;
-            $userPass = $input->txPasswdCurrent;
+            $userCode = $input["txPasswdUser"];
+            $userPass = $input["txPasswdCurrent"];
         # Authenticate user
             require_once('php/MysqliDb.php');
             $db = new MysqliDb($dbHost, $dbUser, $dbPass, $dbName);
@@ -137,17 +138,16 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             }
 
         # Update the Password with the new one
-        $recData = json_decode($raw, true);
         $newData = Array(
-            $fieldPass => password_hash($recData[$fieldPass], PASSWORD_DEFAULT),
+            $fieldPass => password_hash($input[$fieldPass], PASSWORD_DEFAULT),
             $loginConfig["PasswordReset"]["ExpiredField"] => 0
         );
 
-        $db->where('userID', $user['userID']);
+        $db->where($fieldID, $user[$fieldID]);
         $db->update($tableName, $newData);
 
         # Re-get User infos
-        $db->where('userID', $user['userID']);
+        $db->where($fieldID, $user[$fieldID]);
         $user = $db->getOne($tableName);
         
         # If every tests are passed, we start a PHP Session with all user infos.
@@ -162,8 +162,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     }
     if( $method == "reset" ){
         # Extract user email address from form 
-            $recData = json_decode($raw, true);
-            $userEmail = $recData[$loginConfig["PasswordReset"]["EmailField"]];
+            $userEmail = $input[$loginConfig["PasswordReset"]["EmailField"]];
         
         # Database
             require_once('php/MysqliDb.php');
@@ -195,7 +194,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             );
 
             ######## Must implement something to handle Table Key
-            $db->where("userID", $user['userID']);
+            $db->where($fieldID, $user[$fieldID]);
             if( $db->update($tableName, $newData) ){
                 $mailOK =  mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
                 if( $mailOK === true ){
@@ -216,12 +215,11 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
     }
     if( $method == "register" ){
         # Extract registration data 
-        $recData = json_decode($raw, true);
-        unset( $recData[ 'method' ] );
-        unset( $recData[ $fieldPass . '2' ] );
+        unset( $input['method']);
+        unset( $input[ $fieldPass . '2' ] );
 
         # Hash Password
-        $recData[$fieldPass] = password_hash( $recData[$fieldPass], PASSWORD_DEFAULT);
+        $input[$fieldPass] = password_hash( $input[$fieldPass], PASSWORD_DEFAULT);
 
         # Database
         require_once('php/MysqliDb.php');
@@ -230,7 +228,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         # Check for unique data
         $uniques = array_map('trim', explode(",", $loginConfig["Registration"]["Uniques"]));
         foreach( $uniques as $unique ){
-            $db->where($unique, $recData[$unique]);
+            $db->where($unique, $input[$unique]);
             $db->get($tableName);
             if( $db->count > 0 ){
                 $json['status']     = 'error';
@@ -240,11 +238,11 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         }
 
         # Create new User Entry
-        $newID = $db->insert( $tableName, $recData );
+        $newID = $db->insert( $tableName, $input );
 
         # Retrieve data from database, to proceed to the session start.
-        $db->where( $fieldUser, $recData[ $fieldUser ] );
-        $user = $db->getOne( $tableName );
+        $db->where($fieldID, $newID);
+        $user = $db->getOne($tableName);
 
         # If every tests are passed, we start a PHP Session with all user infos.
         session_start();
@@ -255,7 +253,6 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         $json['message']    = 'Welcome!';
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
-
     }
 
 OutputJSON:
