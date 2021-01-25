@@ -2,6 +2,9 @@
 
 A generic PHP login form and easy to setup.  You can add this code to your website(s), so you don't have to re-build a login process for each of your projects, over and over again.  My code works by itself: it doesn't depend on Composer or any other complex framework.  You take the code and it works right away.
 
+This tool will fits your needs, with many parameters you can control, and also, it will adapt to your existent database.  
+Want more?  Just submit an issue, I will be happy to add more features!
+
 ## Requirements
 - Use of MySQL Database
 - PHP 7.1.19 (not tested with other versions)
@@ -49,7 +52,15 @@ In this setting, you would set the User Email and/or User Code column name, to a
 When the registratin is completed, the user will be redirected, the same way a regular login would do.
 
 ### Enable Password Reset
-(function not yet created)
+Edit the `.login.config` file as follow:
+
+1. Change the `PasswordReset/Enabled` to `Y` (for Yup!).
+1. Customize the `PasswordReset/Invite` and `PasswordReset/Color` to something you like.
+1. Set `PasswordReset/EmailField` to the MySQL Column of your Users Table, that contains the email address.  A temporary password will be send there.
+1. Set `PasswordReset/ExpiredField` to the MySQL Column of your Users Table, set as TinyINT, default 0.  If set to 0, the account is OK.  If set to 1, the user will be forced to change its password at its next logon.
+
+That's it!
+
 
 ## Built With
 * [MysqliDb 2.9.3](https://github.com/ThingEngineer/PHP-MySQLi-Database-Class) - Simple MySQLi wrapper and object mapper with prepared statements.
