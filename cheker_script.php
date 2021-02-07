@@ -204,5 +204,9 @@ function dbCheckTable($table){
     if( $passwdEnabled ){
         doTest_Set('Password Reset feature: Button text', 'PasswordReset', 'Invite');
         doTest_Set('Password Reset feature: Button color', 'PasswordReset', 'Color');
+    }else{
+        $res = initResults();
+        setResults($res, -1, 'This feature is OFF');
+        printTest('Reset password feature', $res);
     }
 
