@@ -138,20 +138,22 @@ function dbCheckTable($table){
     }else{
         setResults($res, 1, "Table $tableName NOT found!");
     }
-    printTest("Looking for User Table", $res);
+    printTest("Looking for User Table ($tableName)", $res);
 
     // Read table
-    $cols = $db->rawQuery("DESCRIBE $tableName");
+    $myCols = $db->rawQuery("DESCRIBE ". $tableName);
     $string = '';
-    foreach($cols as $col){
-        $string .= "<br><strong>" . $col['Field'] . "</strong>, type <strong>" . $col['Type'] . "</strong>, default '" . $col['Default'] . "'";
+    foreach($myCols as $col){
+        $fieldName = $col['Field'];
+        $fieldType = $col['Type'];
+        $fieldDefault = $col['Default'];
+        $string .= "<br><strong>$fieldName</strong> &emsp;&emsp; <strong>$fieldType</strong> &emsp; default $fieldDefault";
     }
+    
+
     $res = initResults();
     setResults($res, 0, $string);
     printTest("Read fields in User Table", $res);
-    
-
-
 
     # If the registration feature is enabled
     $registrationEnabled = (($config['Registration']['Enabled'])=="Y");
