@@ -192,6 +192,10 @@ function dbCheckTable($table){
         }
         printTest('Registration feature: Additional fields', $res);
 
+    }else{
+        $res = initResults();
+        setResults($res, -1, 'This feature is OFF');
+        printTest('Registration feature', $res);
     }
 
 
