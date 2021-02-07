@@ -26,6 +26,10 @@ function createIcon($result){
     $icon = '';
     $color = '';
     switch($result){
+        case -1:
+            $icon = 'minus';
+            $color = 'grey';
+            break;
         case 0:
             $icon = 'check circle outline';
             $color = 'green';
