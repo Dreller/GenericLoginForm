@@ -61,6 +61,8 @@ Edit the `.login.config` file as follow:
 
 That's it!
 
+### Validate the setup
+To help validate the setup file, I made a small script that check every settings and report you any issues it may find.  This script will evolve with time.  You can get to it by browsing to `/cheker.php` and hit the Start check button.  Take the time to read the details to ensure a good setup and a working Login form for your users.
 
 ## Built With
 * [MysqliDb 2.9.3](https://github.com/ThingEngineer/PHP-MySQLi-Database-Class) - Simple MySQLi wrapper and object mapper with prepared statements.
