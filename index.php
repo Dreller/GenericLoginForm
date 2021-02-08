@@ -230,6 +230,8 @@ require_once('engine.php');
         <script src="js/jquery_3.5.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
         <script>
+        var currentForm = '';
+        
             function wrapForm(formID){
                 var mixed_array = $('#' + formID).serializeArray();
                 var sorted_array = {};
@@ -240,48 +242,52 @@ require_once('engine.php');
                 return jsonWorker;
             }
             function sendLoginForm(){
-                $("#bt_loginOK").addClass("loading");
+                currentForm = "login";
+                setBtnLoad(true);
                 if( !validateForm('loginForm') ){
-                    $("#bt_loginOK").removeClass("loading");
+                    setBtnLoad(false);
                     return false;
                 }
                 var loginData = wrapForm('loginForm');
-                sendForm(loginData, 'login');
+                sendForm(loginData);
             }
             function sendRegistrationForm(){
-                $("#bt_registrationOK").addClass("loading");
+                currentForm = "registration";
+                setBtnLoad(true);
                 if( !validateForm('registerForm') ){
-                    $("#bt_registrationOK").removeClass("loading");
+                    setBtnLoad(false);
                     return false;
                 }
                 var registerData = wrapForm('registerForm');
-                sendForm(registerData, 'registration');
+                sendForm(registerData);
             }
             function sendResetForm(){
-                $("#bt_resetOK").addClass("loading");
+                currentForm = "reset";
+                setBtnLoad(true);
                 if( !validateForm('resetForm') ){
-                    $("#bt_resetOK").removeClass("loading");
+                    setBtnLoad(false);
                     return false;
                 }
                 var resetData = wrapForm('resetForm');
-                sendForm(resetData, 'reset');
+                sendForm(resetData);
             }
             function sendPasswdForm(){
-                $("#bt_passwdOK").addClass("loading");
+                currentForm = "passwd";
+                setBtnLoad(true);
                 if( !validateForm('passwdForm') ){
-                    $("#bt_passwdOK").removeClass("loading");
+                    setBtnLoad(false);
                     return false;
                 }
                 var passwdData = wrapForm('passwdForm');
-                sendForm(passwdData, 'passwd');
+                sendForm(passwdData);
             }
-            function sendForm(jsonData, target){
+            function sendForm(jsonData){
                 $.ajax({
                     type: "POST",
                     url: "engine.php",
                     data: jsonData,
-                    success: function(result, target){
-                        processResult(result, target);
+                    success: function(result){
+                        processResult(result);
                     }
                 });
             }
@@ -322,12 +328,12 @@ require_once('engine.php');
                 return !$.trim(element.val());
             }
 
-            function processResult(myData, target){
-                $("#bt" + target + "OK").removeClass("loading");
+            function processResult(myData){
+                setBtnLoad(false);
                 console.log(myData);
 
                 if( myData['status'] == 'error' ){
-                    displayErrorMessage(target, myData['message']);
+                    displayErrorMessage(myData['message']);
                 }
                 if( myData['status'] == 'tell' ){
                     document.getElementById("dimmerText").innerHTML = myData['message'];
@@ -353,12 +359,22 @@ require_once('engine.php');
             function displayPasswdForm(){
                 $("#passwdModal").modal('show');
             }
-            function displayErrorMessage(target, message){
-                document.getElementById(target + 'ErrorMessageText').innerHTML = message;
-                $('#' + target + 'ErrorMessage').removeClass('hidden');
-                $('#' + target + 'ErrorMessage').addClass('visible');
+            function displayErrorMessage(message){
+                console.log("displayErrorMessage(" + message + ")");
+                document.getElementById(currentForm + 'ErrorMessageText').innerHTML = message;
+                $('#' + currentForm + 'ErrorMessage').removeClass('hidden');
+                $('#' + currentForm + 'ErrorMessage').addClass('visible');
             }
-            
+
+
+            function setBtnLoad(activate){
+                var btnID = "#bt_" + currentForm + "OK";
+                if( activate === true ){
+                    $(btnID).addClass("loading");
+                }else{
+                    $(btnID).removeClass("loading");
+                }
+            }            
         </script>
     </body>
 </html>
