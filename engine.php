@@ -3,8 +3,18 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 # Read configs
 $loginConfig = parse_ini_file('.login.config', TRUE);
+
+# Server language
+$srv_lang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+$lang = explode('-', $srv_lang)[0];
+if( $lang != 'fr' ){
+    $lang = strtolower( $loginConfig['Application']['Language'] );
+}
+# Import language pack
+include_once('_lang_' . $lang . '.php');
 
 # Check if there is any enabled options
 $loginOptions = false;
@@ -77,13 +87,13 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         # If there is no user found
             if( $db->count == 0 ){
                 $json['status']     = 'error';
-                $json['message']    = sprintf($loginConfig["Literal"]["NoUserFound"], $userCode);
+                $json['message']    = sprintf(_ERROR_USERNOTFOUND, $userCode);
                 goto OutputJSON;
             }
         # If the password is not the right one
             if( !password_verify($userPass, $user[$fieldPass]) ){
                 $json['status']     = 'error';
-                $json['message']    = $loginConfig["Literal"]["BadPassword"];
+                $json['message']    = _ERROR_BADPWD;
                 goto OutputJSON;
             }
 
@@ -93,7 +103,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             $expirationField = $loginConfig["PasswordReset"]["ExpiredField"];
             if( $user[$expirationField] != 0 ){
                 $json['status']     = 'passwd';
-                $json['message']    = 'You must change your password';
+                $json['message']    = _LABEL_PWDCHG_HELP;
                 $json['u']          = $userCode;
                 $json['p']          = $userPass;
                 goto OutputJSON;
@@ -107,7 +117,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             $_SESSION[$key] = $value;
         }
         $json['status']     = 'ok';
-        $json['message']    = 'Welcome!';
+        $json['message']    = _LABEL_WELCOME;
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
     }
@@ -127,13 +137,13 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         # If there is no user found
             if( $db->count == 0 ){
                 $json['status']     = 'error';
-                $json['message']    = sprintf($loginConfig["Literal"]["NoUserFound"], $userCode);
+                $json['message']    = sprintf(_ERROR_USERNOTFOUND, $userCode);
                 goto OutputJSON;
             }
         # If the password is not the right one
             if( !password_verify($userPass, $user[$fieldPass]) ){
                 $json['status']     = 'error';
-                $json['message']    = $loginConfig["Literal"]["BadPassword"];
+                $json['message']    = _ERROR_BADPWD;
                 goto OutputJSON;
             }
 
@@ -156,7 +166,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             $_SESSION[$key] = $value;
         }
         $json['status']     = 'ok';
-        $json['message']    = 'Welcome!';
+        $json['message']    = _LABEL_WELCOME;
         $json['reference']  = $loginConfig["Application"]["RedirectPage"];
         goto OutputJSON;
     }
@@ -174,12 +184,12 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
 
             if( $db->count == 0 ){
                 $json['status']     = 'error';
-                $json['message']    = 'No user found with this email.';
+                $json['message']    = _ERROR_MAILNOTFOUND;
                 goto OutputJSON;
             }
             if( $db->count > 1 ){
                 $json['status']     = 'error';
-                $json['message']    = 'Oops!  Something went wrong, we have found more than 1 user with this email.';
+                $json['message']    = _ERROR_MORETHAN1USER;
                 goto OutputJSON;
             }
             # At this point, we have found the only user related to this email address.
@@ -196,14 +206,14 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             ######## Must implement something to handle Table Key
             $db->where($fieldID, $user[$fieldID]);
             if( $db->update($tableName, $newData) ){
-                $mailOK =  mail($userEmail,"Your temporary password","Here is your temporary password: " . $newPasswd);
+                $mailOK =  mail($userEmail,_EMAIL_PWD_SUBJECT,sprintf(_EMAIL_PWD_BODY, $newPasswd)) ;
                 if( $mailOK === true ){
                     $json['status']     = 'tell';
-                    $json['message']    = 'Temporary password sent to ' . $userEmail . '.  Be sure to check your SPAM folder!';
+                    $json['message']    = sprintf(_EMAIL_PWD_CONFIRM, $userEmail);
                     goto OutputJSON;
                 }else{
                     $json['status']     = 'error';
-                    $json['message']    = 'Password has been changed, but unable to send the temporary password to ' . $userEmail;
+                    $json['message']    = sprintf(_EMAIL_PWD_NOEMAIL, $userEmail);
                     goto OutputJSON;
                 }
                 
@@ -232,7 +242,7 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
             $db->get($tableName);
             if( $db->count > 0 ){
                 $json['status']     = 'error';
-                $json['message']    = 'Looks like you already have an account.';
+                $json['message']    = _ERROR_USREXISTS;
                 goto OutputJSON;
             }
         }
