@@ -1,7 +1,6 @@
 <?php 
 # Import engine
 require_once('engine.php');
-
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -39,21 +38,21 @@ require_once('engine.php');
                             <form id="loginForm">
                                 <input type="hidden" name="method" value="auth">
                                 <div class="field">
-                                    <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
+                                    <label><?php echo _PROMPT_USERCODE; ?></label>
                                     <div class="ui left icon input">
                                         <input type="text" name="txUser" id="txUser" required>
                                         <i class="user icon"></i>
                                     </div>
                                 </div>
                                 <div class="field">
-                                    <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?></label>
+                                    <label><?php echo _PROMPT_PWD; ?></label>
                                     <div class="ui left icon input">
                                         <input type="password" name="txPasswd" id="txPasswd" required>
                                         <i class="lock icon"></i>
                                     </div>
                                 </div>
                                 <div class="ui <?php echo $loginConfig["GUI"]["LoginButtonColor"]; ?> submit button" id="bt_loginOK" onclick="sendLoginForm();">
-                                    <?php echo $loginConfig["GUI"]["LoginButtonLabel"]; ?>
+                                    <?php echo _BUTTON_LOGIN; ?>
                                 </div>
                             </form>
                         </div>
@@ -66,13 +65,13 @@ require_once('engine.php');
                                 if( $loginConfig["Registration"]["Enabled"]=="Y" ){
                                     echo '<p><div class="ui '.$loginConfig["Registration"]["Color"].' button" onclick="displayRegistrationForm();">
                                             <i class="signup icon"></i>
-                                            '.$loginConfig["Registration"]["Invite"].'
+                                            '. _BUTTON_REGISTER .'
                                         </div></p>';
                                 }
                                 if( $loginConfig["PasswordReset"]["Enabled"]=="Y" ){
-                                    echo '<p><div class="ui '.$loginConfig["PasswordReset"]["Invite"].' button" onclick="displayResetForm();">
+                                    echo '<p><div class="ui '.$loginConfig["PasswordReset"]["Color"].' button" onclick="displayResetForm();">
                                             <i class="signup icon"></i>
-                                            '.$loginConfig["PasswordReset"]["Invite"].'
+                                            '. _BUTTON_PWDRESET .'
                                         </div></p>';
                                 }
                             echo '</div>';
@@ -82,7 +81,7 @@ require_once('engine.php');
                 <?php 
                     if( $loginOptions ){
                         echo '<div class="ui vertical divider">
-                            '.$loginConfig["GUI"]["SeparatorLabel"].'
+                            '. _LABEL_OR .'
                         </div>';
                     }
                 ?>
@@ -92,7 +91,7 @@ require_once('engine.php');
         <div class="ui tiny modal" id="resetModal">
             <i class="close icon"></i>
             <div class="header">
-                Reset password form
+                <?php echo _LABEL_PWDRESET_FORM; ?>
             </div>
             <div class="content">
                 <div class="ui hidden message negative" id="resetErrorMessage">
@@ -103,7 +102,7 @@ require_once('engine.php');
                     <div class="ui form">
                         <div class="field">
                             <div class="field">
-                                <label>Enter your email address:</label>
+                                <label><?php echo _PROMPT_PWDRESET; ?>:</label>
                                 <input type="email" id="<?php echo $loginConfig["PasswordReset"]["EmailField"]; ?>" name="<?php echo $loginConfig["PasswordReset"]["EmailField"]; ?>">
                             </div>
                         </div>
@@ -111,7 +110,7 @@ require_once('engine.php');
                 </form>
             </div>
             <div class="actions">
-                <div class="ui cancel button">Cancel</div>
+                <div class="ui cancel button"><?php echo _BUTTON_CANCEL; ?></div>
                 <div class="ui button" id="btn_resetOK" onclick="sendResetForm();">OK</div>
             </div>
         </div>
@@ -119,7 +118,7 @@ require_once('engine.php');
         <div class="ui tiny modal" id="passwdModal">
             <i class="close icon"></i>
             <div class="header">
-                Change password form
+                <?php echo _LABEL_PWDCHG_FORM; ?>
             </div>
             <div class="content">
                 <div class="ui hidden message negative" id="passwdErrorMessage">
@@ -130,27 +129,27 @@ require_once('engine.php');
                     <div class="ui form">
                         <div class="ui info message">
                             <div class="header">
-                                You must change your password to continue.
+                                <?php echo _LABEL_PWDCHG_HELP; ?>.
                             </div>
                             <p>
-                                Your <?php echo $loginConfig["GUI"]["UserLabel"]; ?> and current <?php echo $loginConfig["GUI"]["PasswordLabel"]; ?> are already set.  Please, fill this form to set your new password.
+                                <?php echo sprintf(_LABEL_PWDCHG_NOTICE, _PROMPT_USERCODE, _PROMPT_PWD); ?>
                             </p>
                         </div>
                         <div class="field">
                             <div class="field">
-                                <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
+                                <label><?php echo _PROMPT_USERCODE; ?></label>
                                 <input type="text" name="txPasswdUser" id="txPasswdUser" required>
                             </div>
                             <div class="field">
-                                <label><?php echo "Current password"; ?></label>
+                                <label><?php echo _PROMPT_PWDCURRENT ; ?></label>
                                 <input type="password" name="txPasswdCurrent" id="txPasswdCurrent" required>
                             </div>
                             <div class="field">
-                                <label><?php echo "New password"; ?></label>
+                                <label><?php echo _PROMPT_PWDNEW ; ?></label>
                                 <input type="password" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" required>
                             </div>
                             <div class="field">
-                                <label><?php echo "New password (confirm)"; ?></label>
+                                <label><?php echo _PROMPT_PWDCONFIRM ; ?></label>
                                 <input type="password" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" required>
                             </div>
                         </div>
@@ -158,7 +157,7 @@ require_once('engine.php');
                 </form>
             </div>
             <div class="actions">
-                <div class="ui cancel button">Cancel</div>
+                <div class="ui cancel button"><?php echo _BUTTON_CANCEL; ?></div>
                 <div class="ui button" id="btn_passwdOK" onclick="sendPasswdForm();">OK</div>
             </div>
         </div>
@@ -167,7 +166,7 @@ require_once('engine.php');
         <div class="ui tiny modal" id="registrationModal">
             <i class="close icon"></i>
             <div class="header">
-                Registration form
+                <?php echo _LABEL_REGISTER_FORM; ?>
             </div>
             <div id="modalText" class="content">
                 <div class="ui hidden message negative" id="registrationErrorMessage">
@@ -178,17 +177,17 @@ require_once('engine.php');
                     <div class="ui form">
                         <div class="field">
                             <div class="field">
-                                <label><?php echo $loginConfig["GUI"]["UserLabel"]; ?></label>
+                                <label><?php echo _PROMPT_USERCODE ; ?></label>
                                 <input type="text" id="<?php echo $loginConfig["Database"]["UserCodeField"]; ?>" name="<?php echo $loginConfig["Database"]["UserCodeField"]; ?>" required>
                             </div>
                         </div>
                         <div class="two fields">
                             <div class="field">
-                                <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?></label>
+                                <label><?php echo _PROMPT_PWD ; ?></label>
                                 <input type="password" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" required>
                             </div>
                             <div class="field">
-                                <label><?php echo $loginConfig["GUI"]["PasswordLabel"]; ?> (Confirm)</label>
+                                <label><?php echo _PROMPT_PWDCONFIRM; ?></label>
                                 <input type="password" id="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" name="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2" required>
                             </div>
                         </div>
@@ -216,7 +215,7 @@ require_once('engine.php');
                 </form>
             </div>
             <div class="actions">
-                <div class="ui cancel button">Cancel</div>
+                <div class="ui cancel button"><?php echo _BUTTON_CANCEL; ?></div>
                 <div class="ui button" id="btn_registrationOK" onclick="sendRegistrationForm();">OK</div>
             </div>
         </div>
