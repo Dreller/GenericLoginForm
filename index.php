@@ -18,6 +18,10 @@ require_once('engine.php');
                 cursor:pointer;
             }
         </style>
+        <script>
+            var fieldPassword = "<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>";
+            var errorPwdDiff = "<?php echo _ERROR_PWDNOTSAME; ?>";
+        </script>
     </head>
     <body>
         <p>
@@ -121,8 +125,8 @@ require_once('engine.php');
                 <?php echo _LABEL_PWDCHG_FORM; ?>
             </div>
             <div class="content">
-                <div class="ui hidden message negative" id="passwdErrorMessage">
-                    <p id="passwdErrorMessageText"></p>
+                <div class="ui hidden message negative" id="passwdFormError">
+                    <p id="passwdFormErrorText"></p>
                 </div>
                 <form id="passwdForm">
                     <input type="hidden" name="method" value="passwd">
@@ -169,8 +173,8 @@ require_once('engine.php');
                 <?php echo _LABEL_REGISTER_FORM; ?>
             </div>
             <div id="modalText" class="content">
-                <div class="ui hidden message negative" id="registrationErrorMessage">
-                    <p id="registrationErrorMessageText"></p>
+                <div class="ui hidden message negative" id="registerFormError">
+                    <p id="registerFormErrorText"></p>
                 </div>
                 <form id="registerForm">
                     <input type="hidden" name="method" value="register">
@@ -192,6 +196,7 @@ require_once('engine.php');
                             </div>
                         </div>
                         <?php
+                            if( $loginConfig["Registration"]["Fields"] != '' ){
                                 $promptNames = explode(",", $loginConfig["Registration"]["Fields"]);
                                 $promptLabels = explode(",", $loginConfig["Registration"]["Labels"]);
                                 $promptTypes = explode(",", $loginConfig["Registration"]["Types"]);
@@ -209,6 +214,7 @@ require_once('engine.php');
                                     echo '<input type="' . $thisType. '" id="' . $thisName . '" name="' . $thisName . '">';
                                     echo '</div>';
                                 }
+                            }
                             ?>
                         
                     </div>
@@ -228,136 +234,6 @@ require_once('engine.php');
        
         <script src="js/jquery_3.5.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
-        <script>
-            function wrapForm(formID){
-                var mixed_array = $('#' + formID).serializeArray();
-                var sorted_array = {};
-                $.map(mixed_array, function(n, i){
-                    sorted_array[n['name']] = n['value'];
-                });
-                var jsonWorker = JSON.stringify(sorted_array);
-                return jsonWorker;
-            }
-            function sendLoginForm(){
-                $("#bt_loginOK").addClass("loading");
-                if( !validateForm('loginForm') ){
-                    $("#bt_loginOK").removeClass("loading");
-                    return false;
-                }
-                var loginData = wrapForm('loginForm');
-                sendForm(loginData, 'login');
-            }
-            function sendRegistrationForm(){
-                $("#bt_registrationOK").addClass("loading");
-                if( !validateForm('registerForm') ){
-                    $("#bt_registrationOK").removeClass("loading");
-                    return false;
-                }
-                var registerData = wrapForm('registerForm');
-                sendForm(registerData, 'registration');
-            }
-            function sendResetForm(){
-                $("#bt_resetOK").addClass("loading");
-                if( !validateForm('resetForm') ){
-                    $("#bt_resetOK").removeClass("loading");
-                    return false;
-                }
-                var resetData = wrapForm('resetForm');
-                sendForm(resetData, 'reset');
-            }
-            function sendPasswdForm(){
-                $("#bt_passwdOK").addClass("loading");
-                if( !validateForm('passwdForm') ){
-                    $("#bt_passwdOK").removeClass("loading");
-                    return false;
-                }
-                var passwdData = wrapForm('passwdForm');
-                sendForm(passwdData, 'passwd');
-            }
-            function sendForm(jsonData, target){
-                $.ajax({
-                    type: "POST",
-                    url: "engine.php",
-                    data: jsonData,
-                    success: function(result, target){
-                        processResult(result, target);
-                    }
-                });
-            }
-            function validateForm(formID){
-                var iErrors = 0;
-                $("form#" + formID).find('input').each(function(){
-
-                    if( $(this).prop('required') ){
-                        if( isEmpty( $(this) )){
-                            $(this).parent().parent().addClass('error');
-                            console.log('Field ' + $(this).prop('id') + ' is required and empty.');
-                            iErrors++;
-                        }else{
-                            $(this).parent().parent().removeClass('error');
-                        }
-                    }
-
-                    if( $(this).attr("name")!="<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>" ){
-                        $passwd1 = document.getElementById('<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>').value;
-                        $passwd2 = document.getElementById('<?php echo $loginConfig["Database"]["UserPasswordField"]; ?>2').value;
-                        if( $passwd1 != $passwd2 ){
-                            $(this).parent().parent().addClass('error');
-                            displayErrorMessage('registration', 'Password and its confirmation are differents.');
-                            iErrors++;
-                        }
-                    }
-                });
-                
-                if( iErrors > 0 ){
-                    return false;
-                }else{
-                    return true;
-                }
-            }
-
-            function isEmpty(element){
-                // Source: https://stackoverflow.com/a/6813294
-                return !$.trim(element.val());
-            }
-
-            function processResult(myData, target){
-                $("#bt" + target + "OK").removeClass("loading");
-                console.log(myData);
-
-                if( myData['status'] == 'error' ){
-                    displayErrorMessage(target, myData['message']);
-                }
-                if( myData['status'] == 'tell' ){
-                    document.getElementById("dimmerText").innerHTML = myData['message'];
-                    console.log(myData['message']);
-                    $("#dimmerScreen").dimmer('show');
-                }
-                if( myData['status'] == 'ok' ){
-                    window.location.replace(myData['reference']);
-                }
-                if( myData['status'] == 'passwd' ){
-                    $("#txPasswdUser").val(myData['u']);
-                    $("#txPasswdCurrent").val(myData['p']);
-                    displayPasswdForm();
-                }
-
-            }
-            function displayRegistrationForm(){
-                $("#registrationModal").modal('show');
-            }
-            function displayResetForm(){
-                $("#resetModal").modal('show');
-            }
-            function displayPasswdForm(){
-                $("#passwdModal").modal('show');
-            }
-            function displayErrorMessage(target, message){
-                document.getElementById(target + 'ErrorMessageText').innerHTML = message;
-                $('#' + target + 'ErrorMessage').removeClass('hidden');
-                $('#' + target + 'ErrorMessage').addClass('visible');
-            }
-            
-        </script>
+        <script src="js/login.js"></script>
     </body>
 </html>

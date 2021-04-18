@@ -24,6 +24,7 @@ define("_ERROR_USERNOTFOUND", "Utilisateur '%s' introuvable");
 define("_ERROR_MAILNOTFOUND", "Aucun utilisateur avec le courriel '%s'");
 define("_ERROR_MORETHAN1USER", "Oops!  Un probl&egrave;me s'est produit: plusieurs utilisateurs correspondent &agrave; ce courriel!");
 define("_ERROR_USREXISTS", "Il semble que vous soyez d&eacute;j&agrave; inscrit.");
+define("_ERROR_PWDNOTSAME", "Le mot de passe et la confirmation doivent &ecirc;tre identiques.");
 
 define("_EMAIL_PWD_SUBJECT", "Votre mot de passe temporaire");
 define("_EMAIL_PWD_BODY", "Voici votre mot de passe temporaire, que vous devrez modifier: %s");

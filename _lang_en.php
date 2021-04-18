@@ -24,6 +24,7 @@ define("_ERROR_USERNOTFOUND", "User '%s' not found");
 define("_ERROR_MAILNOTFOUND", "No user with email '%s'");
 define("_ERROR_MORETHAN1USER", "Oops!  Something went wrong, we have found more than 1 user with this email.");
 define("_ERROR_USREXISTS", "Looks like you already have an account.");
+define("_ERROR_PWDNOTSAME", "Password and its confirmation are differents.");
 
 define("_EMAIL_PWD_SUBJECT", "Your temporary password");
 define("_EMAIL_PWD_BODY", "Here is your temporary password.  You will have to change it at your next login: %s");
