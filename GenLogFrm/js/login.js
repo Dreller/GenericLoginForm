@@ -67,6 +67,7 @@ function validateForm(formID){
             }
         }
 
+        // Passwd comparison
         if( $(this).attr("name")==fieldPassword ){
             var passwd1 = $("#" + formID + " #" + fieldPassword).val();
             var passwd2 = $("#" + formID + " #" + fieldPassword + '2').val();
@@ -92,6 +93,7 @@ function isEmpty(element){
 
 function processResult(myData, target){
     $("#bt" + target + "OK").removeClass("loading");
+    $("#bt_loginOK").removeClass("loading");
     console.log(myData);
 
     if( myData['status'] == 'error' ){
