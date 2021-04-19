@@ -36,8 +36,8 @@ require_once('GenLogFrm/engine.php');
                 <div class="ui <?php echo ($loginOptions?'three':''); ?> column relaxed stackable grid">
                     <div class="seven wide column">
                         <div class="ui form">
-                            <div class="ui hidden message negative" id="loginErrorMessage">
-                            <p id="loginErrorMessageText"></p>
+                            <div class="ui hidden message negative" id="loginError">
+                            <p id="loginErrorText"></p>
                             </div>
                             <form id="loginForm">
                                 <input type="hidden" name="method" value="auth">
@@ -93,8 +93,8 @@ require_once('GenLogFrm/engine.php');
                 <?php echo _LABEL_PWDRESET_FORM; ?>
             </div>
             <div class="content">
-                <div class="ui hidden message negative" id="resetErrorMessage">
-                    <p id="resetErrorMessageText"></p>
+                <div class="ui hidden message negative" id="resetFormError">
+                    <p id="resetFormErrorText"></p>
                 </div>
                 <form id="resetForm">
                     <input type="hidden" name="method" value="reset">

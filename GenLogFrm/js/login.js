@@ -1,3 +1,5 @@
+var processTarget = "";
+
 function wrapForm(formID){
     var mixed_array = $('#' + formID).serializeArray();
     var sorted_array = {};
@@ -8,6 +10,7 @@ function wrapForm(formID){
     return jsonWorker;
 }
 function sendLoginForm(){
+    processTarget = "login";
     $("#bt_loginOK").addClass("loading");
     if( !validateForm('loginForm') ){
         $("#bt_loginOK").removeClass("loading");
@@ -17,6 +20,7 @@ function sendLoginForm(){
     sendForm(loginData, 'login');
 }
 function sendRegistrationForm(){
+    processTarget = "registerForm";
     $("#bt_registrationOK").addClass("loading");
     if( !validateForm('registerForm') ){
         $("#bt_registrationOK").removeClass("loading");
@@ -26,6 +30,7 @@ function sendRegistrationForm(){
     sendForm(registerData, 'registration');
 }
 function sendResetForm(){
+    processTarget = "resetForm";
     $("#bt_resetOK").addClass("loading");
     if( !validateForm('resetForm') ){
         $("#bt_resetOK").removeClass("loading");
@@ -35,6 +40,7 @@ function sendResetForm(){
     sendForm(resetData, 'reset');
 }
 function sendPasswdForm(){
+    processTarget = "passwdForm";
     $("#bt_passwdOK").addClass("loading");
     if( !validateForm('passwdForm') ){
         $("#bt_passwdOK").removeClass("loading");
@@ -124,7 +130,7 @@ function displayPasswdForm(){
     $("#passwdModal").modal('show');
 }
 function displayErrorMessage(target, message){
-    document.getElementById(target + 'ErrorText').innerHTML = message;
-    $('#' + target + 'Error').removeClass('hidden');
-    $('#' + target + 'Error').addClass('visible');
+    document.getElementById(processTarget + 'ErrorText').innerHTML = message;
+    $('#' + processTarget + 'Error').removeClass('hidden');
+    $('#' + processTarget + 'Error').addClass('visible');
 }
