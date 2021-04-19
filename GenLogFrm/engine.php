@@ -5,7 +5,11 @@ error_reporting(E_ALL);
 
 
 # Read configs
-$loginConfig = parse_ini_file('.login.config', TRUE);
+$configPath = '../.login.config';
+if( !file_exists($configPath) ){
+    $configPath = '.login.config';
+}
+$loginConfig = parse_ini_file($configPath, TRUE);
 
 # Server language
 $srv_lang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];

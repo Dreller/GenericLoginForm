@@ -46,7 +46,7 @@ function sendPasswdForm(){
 function sendForm(jsonData, target){
     $.ajax({
         type: "POST",
-        url: "engine.php",
+        url: "GenLogFrm/engine.php",
         data: jsonData,
         success: function(result, target){
             processResult(result, target);

@@ -1,6 +1,6 @@
 <?php 
 # Import engine
-require_once('engine.php');
+require_once('GenLogFrm/engine.php');
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -232,8 +232,8 @@ require_once('engine.php');
         </div>
     </div>
        
-        <script src="js/jquery_3.5.1.js"></script>
+        <script src="GenLogFrm/js/jquery_3.5.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
-        <script src="js/login.js"></script>
+        <script src="GenLogFrm/js/login.js"></script>
     </body>
 </html>
