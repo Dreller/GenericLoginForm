@@ -113,8 +113,14 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         
         # If every tests are passed, we start a PHP Session with all user infos.
         session_start();
+        # Build the array of values that should be excluded
+        $temp = $loginConfig['Database']['UserPasswordField'] . ', ' . $loginConfig['Database']['SessionExclusions'];
+        $temp = str_replace(' ', '', $temp);
+        $exclArray = explode(',', $temp);
         foreach( $user as $key=>$value ){
-            $_SESSION[$key] = $value;
+            if( !in_array($key, $exclArray) ){
+                $_SESSION[$key] = $value;
+            }
         }
         $json['status']     = 'ok';
         $json['message']    = _LABEL_WELCOME;
