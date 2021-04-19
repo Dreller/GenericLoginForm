@@ -5,7 +5,11 @@ error_reporting(E_ALL);
 
 
 # Read configs
-$loginConfig = parse_ini_file('.login.config', TRUE);
+$configPath = '../.login.config';
+if( !file_exists($configPath) ){
+    $configPath = '.login.config';
+}
+$loginConfig = parse_ini_file($configPath, TRUE);
 
 # Server language
 $srv_lang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
@@ -46,7 +50,15 @@ function randomString($len) {
     return $string; 
 } 
 
-
+# Welcome page under the form
+function insertWelcomeUnder($pagePath){
+    if( file_exists($pagePath) ){
+        $temp = "<div class='ui container' style='margin-top:3em;'>" . file_get_contents($pagePath) . "</div>";
+    }else{
+        $temp = '';
+    }
+    return $temp;
+}
 
 # POST - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # If the engine gets data from a POST call
@@ -113,8 +125,14 @@ if( getenv('REQUEST_METHOD') == 'POST' ){
         
         # If every tests are passed, we start a PHP Session with all user infos.
         session_start();
+        # Build the array of values that should be excluded
+        $temp = $loginConfig['Database']['UserPasswordField'] . ', ' . $loginConfig['Database']['SessionExclusions'];
+        $temp = str_replace(' ', '', $temp);
+        $exclArray = explode(',', $temp);
         foreach( $user as $key=>$value ){
-            $_SESSION[$key] = $value;
+            if( !in_array($key, $exclArray) ){
+                $_SESSION[$key] = $value;
+            }
         }
         $json['status']     = 'ok';
         $json['message']    = _LABEL_WELCOME;

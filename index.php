@@ -1,6 +1,6 @@
 <?php 
 # Import engine
-require_once('engine.php');
+require_once('GenLogFrm/engine.php');
 ?>
 <!doctype html>
 <html class="no-js" lang="en">
@@ -33,11 +33,11 @@ require_once('engine.php');
 
         <div class="ui container">
             <div class="ui placeholder segment">
-                <div class="ui <?php echo ($loginOptions?'two':''); ?> column very relaxed stackable grid">
-                    <div class="column">
+                <div class="ui <?php echo ($loginOptions?'three':''); ?> column relaxed stackable grid">
+                    <div class="seven wide column">
                         <div class="ui form">
-                            <div class="ui hidden message negative" id="loginErrorMessage">
-                            <p id="loginErrorMessageText"></p>
+                            <div class="ui hidden message negative" id="loginError">
+                            <p id="loginErrorText"></p>
                             </div>
                             <form id="loginForm">
                                 <input type="hidden" name="method" value="auth">
@@ -62,10 +62,10 @@ require_once('engine.php');
                         </div>
                     </div>
 
-
                     <?php 
                         if( $loginOptions ){
-                            echo '<div class="middle aligned column">';
+                            echo '<div class="two wide column" style="position:relative; margin:0; padding:0;"><div class="ui vertical divider">Or</div></div>';
+                            echo '<div class="seven wide column middle aligned">';
                                 if( $loginConfig["Registration"]["Enabled"]=="Y" ){
                                     echo '<p><div class="ui '.$loginConfig["Registration"]["Color"].' button" onclick="displayRegistrationForm();">
                                             <i class="signup icon"></i>
@@ -81,14 +81,9 @@ require_once('engine.php');
                             echo '</div>';
                         }
                     ?>
+                    
                 </div>
-                <?php 
-                    if( $loginOptions ){
-                        echo '<div class="ui vertical divider">
-                            '. _LABEL_OR .'
-                        </div>';
-                    }
-                ?>
+                
             </div>
         </div>
 
@@ -98,8 +93,8 @@ require_once('engine.php');
                 <?php echo _LABEL_PWDRESET_FORM; ?>
             </div>
             <div class="content">
-                <div class="ui hidden message negative" id="resetErrorMessage">
-                    <p id="resetErrorMessageText"></p>
+                <div class="ui hidden message negative" id="resetFormError">
+                    <p id="resetFormErrorText"></p>
                 </div>
                 <form id="resetForm">
                     <input type="hidden" name="method" value="reset">
@@ -231,9 +226,13 @@ require_once('engine.php');
             
         </div>
     </div>
+
+    <?php 
+        echo insertWelcomeUnder($loginConfig['Application']['WelcomeUnder']);
+    ?>
        
-        <script src="js/jquery_3.5.1.js"></script>
+        <script src="GenLogFrm/js/jquery_3.5.1.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
-        <script src="js/login.js"></script>
+        <script src="GenLogFrm/js/login.js"></script>
     </body>
 </html>
