@@ -22,11 +22,20 @@ First thing to do is edit the file `.login.config`.  Take the time to read each 
 1. Change `Application/RedirectPage` to set where whe user must be redirected after a successful authentication.
 1. Change `Database` accordingly to the comments.  You must set the authentication data to reach your MySQL databse.  Also, you have to set the name of the Table that contains your users, and the name of the column that contains Usercodes and Passwords.
 
+### Translations
+Set the default language to use if the user language is not supported, in `Application/Language`.  By default, it's already set to `en`.  GenericLoginForm is supplied with native support for French and English.  Create your own language pack by:
+1. Copy file `_lang_en.php`.
+2. Rename the file by changing `en` with the language 2-letters code.
+3. Edit the file by changing values of variables.
+4. That's it!
+
+Oh, feel free to fork the project and submit a pull request to add your language in the main repo!
+
 ### Enable Registration
 Edit the `.login.config` file as follow:
 
 1. Change the `Registration/Enabled` to `Y` (for Yeah!).
-1. Customize the `Registration/Invite` and `Registration/Color` to something you like.
+1. Customize the `Registration/Color` to something you like.
 
 The basic registration form will ask for the user code and a password.  Those will be saved to the MySQL fields you have set in the `Database` section.
 
@@ -35,6 +44,8 @@ The basic registration form will ask for the user code and a password.  Those wi
 1. List all MySQL Column Names you want to ask, in the Registration form, in `Registration/Fields`.  Separated with a coma.  
 1. For each fields in `Registration/Fields`, you want to set a proper user-friendly label, in `Registration/Labels`, separated with a coma too.
 1. If a field should have a specific data type, set it in `Registration/Types`.  Still separated with a coma.   
+
+For the moment, custom prompts are not translated.
 
 **IMPORTANT: `Fields`, `Labels` and `Types` must have the same number of data**. They should by sync'd together, as you can see in this example:
 
@@ -55,14 +66,14 @@ When the registratin is completed, the user will be redirected, the same way a r
 Edit the `.login.config` file as follow:
 
 1. Change the `PasswordReset/Enabled` to `Y` (for Yup!).
-1. Customize the `PasswordReset/Invite` and `PasswordReset/Color` to something you like.
+1. Customize the `PasswordReset/Color` to something you like.
 1. Set `PasswordReset/EmailField` to the MySQL Column of your Users Table, that contains the email address.  A temporary password will be send there.
 1. Set `PasswordReset/ExpiredField` to the MySQL Column of your Users Table, set as TinyINT, default 0.  If set to 0, the account is OK.  If set to 1, the user will be forced to change its password at its next logon.
 
 That's it!
 
 ### Validate the setup
-To help validate the setup file, I made a small script that check every settings and report you any issues it may find.  This script will evolve with time.  You can get to it by browsing to `/cheker.php` and hit the Start check button.  Take the time to read the details to ensure a good setup and a working Login form for your users.
+To help validate the setup file, I made a small script that check every settings and report you any issues it may find.  This script will evolve with time.  You can get to it by browsing to `/cheker.php` and hit the Start check button.  Take the time to read the details to ensure a good setup and a working Login form for your users.  WARNING: This script needs to be upgraded with recent changes.
 
 ## Built With
 * [MysqliDb 2.9.3](https://github.com/ThingEngineer/PHP-MySQLi-Database-Class) - Simple MySQLi wrapper and object mapper with prepared statements.
