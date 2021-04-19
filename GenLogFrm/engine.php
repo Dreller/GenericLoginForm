@@ -50,7 +50,15 @@ function randomString($len) {
     return $string; 
 } 
 
-
+# Welcome page under the form
+function insertWelcomeUnder($pagePath){
+    if( file_exists($pagePath) ){
+        $temp = "<div class='ui container' style='margin-top:3em;'>" . file_get_contents($pagePath) . "</div>";
+    }else{
+        $temp = '';
+    }
+    return $temp;
+}
 
 # POST - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # If the engine gets data from a POST call
